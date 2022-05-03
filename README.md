@@ -14,3 +14,9 @@ En este repositorio documentamos la configuración de un clúster para HPC (*hig
 ## Disclaimer
 
 Los manuales y archivos de configuración aquí presentados **siguen en desarrollo** y pueden contener fallos o información errónea.
+
+## LICENCIA
+
+Copyright (C) Omar Pizano (oj.pizanoorozco@gmail.com)
+
+Se prohíbe la reproducción de este trabajo, independientemente de la modificación, en cualquier forma sin el permiso previo por escrito del autor.
