@@ -5,6 +5,7 @@ En este repositorio documentamos la configuración de un clúster para HPC (*hig
 ## Lista de Tareas
 
 - [ ] **ACTIVO** (08-03-2022) Investigación y pruebas de configuración del sistema operativo en máquinas virtuales.
+- [ ] **ACTIVO** (04-04-2022) [Manual de instalación y configuración de los sistemas y servicios](manual.md).
 - [ ] **ACTIVO** (28-04-2022) Recolección, instalación y conexión del equipo real.
 - [ ] Prueba del equipo real con la configuración del sistema operativo.
 - [ ] Investigación y pruebas de las librerías de HPC.
