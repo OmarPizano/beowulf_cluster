@@ -19,6 +19,6 @@ Los manuales y archivos de configuración aquí presentados **siguen en desarrol
 
 ## LICENCIA
 
-Copyright (C) 2022 Omar Pizano (oj.pizanoorozco@gmail.com)
+Copyright (C) 2022 Omar Pizano (oj.pizanoorozco@gmail.com), Diego Gómez (da.gomezmartinez@ugto.mx)
 
-Se prohíbe la reproducción de este trabajo, independientemente de la modificación, en cualquier forma sin el permiso previo por escrito del autor.
+Se prohíbe la reproducción de este trabajo, independientemente de la modificación, en cualquier forma sin el permiso previo por escrito de los autores.
