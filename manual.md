@@ -68,5 +68,215 @@ Los nodos esclavos reciben una IP estática en el rango indicado dependiendo de 
 
 El sistema operativo de los nodos consiste actualmente en una instalación base de la distribución Debian GNU\Linux en su versión estable (bullseye). Para el caso de el nodo maestro se utilizó el instalador por red (*netinstall*) obtenido desde el sitio oficial. El sistema de archivos de los nodos fué generado con *debootstrap* y configurado dentro de una jaula *chroot*.
 
-## 2. Configuración del nodo maestro
-## 3. Creación de los nodos esclavos
+## 2. Instalación del SO del nodo maestro
+
+- [ ] Documentar el procedimiento de instalación (automatizado y con el instalador *netinstall*).
+
+## 3. Configuración del nodo maestro
+
+En esta parte, detallamos el proceso de configuración del nodo maestro, una vez que éste ya se encuentra instalado y con la configuración básica del sistema operativo.
+
+### 3.1 Configuración de red
+
+Configuramos ambas interfaces de red del nodo maestro en el archivo `/etc/network/interfaces`. Recordemos que una de las interfaces va conectada a la red del cliente, la cuál muy posiblemente tenga un servidor DHCP, por lo que nosotros usamos dicho servicio. La otra interfaz es la que utilizamos para la red dedicada, y a ésta le asignamos una dirección en el segmento de "Servicios" que definimos en [1.3.2 Red dedicada](#1.3.2-red-dedicada); en concreto, usamos la IP 10.0.33.14 para el nodo maestro.
+
+```
+auto [INT_1]
+iface [INT_1] inet dhcp
+
+auto [INT_2]
+iface [INT_2] inet static
+    address 10.0.33.14
+    netmask 255.255.255.15
+    network 10.0.33.0
+    broadcast 10.0.33.15
+```
+
+### 3.2 Instalación y configuración del software necesario
+
+En esta sección, definimos los componentes escenciales con los que implementaremos la comunicación y funcionamiento crítico del clúster, así como su configuración en las siguientes subsecciones.
+
+Antes que nada, procedemos a instalar los paquetes necesarios.
+
+```bash
+apt install tftpd-hpa nfs-kernel-server isc-dhcp-server openssh-server syslinux pxelinux debootstrap
+```
+
+Los paquetes `tftpd-hpa`, `nfs-kernel-server`, `isc-dhcp-server`, y `openssh-server` corresponden a los servicios TFTP, NFS, DHCP y SSH, respectivamente. Los paquetes `syslinux` y `pxelinux` corresponden al cargador de arranque (*bootloader*) por red que usaremos; ambos paquetes nos proveen de los binarios necesarios para generar nuestras imágenes de arranque. Finalmente, el paquete `debootstrap` nos permite descargar un sistema se archivos base directamente de los repositorios de Debian.
+
+#### 3.2.1 Configuración del servidor DHCP
+
+La mayor parte de la configuración va en el archivo `/etc/dhcp/dhcpd.conf`. Indicamos las opciones de arranque y la configuración de la subred en donde vamos a servir el protocolo DHCP. En este caso, vamos a indicar que se sirvan automáticamente las direcciones 10.0.33.6-10 para elsegmento "Pruebas". También indicamos la puerta de enlace (el nodo maestro) y la dirección de broadcast (10.0.33.15). Cabe mencionar que a pesar de que estamos indicando la puerta de enlace, no realizamos ningún tipo de enrutamiento entre la red dedicada y la red general.
+
+```
+allow booting;
+allow bootp;
+subnet 10.0.33.0 netmask 255.255.255.15 {
+    range 10.0.33.6 10.0.33.10;
+    option routers 10.0.33.1;
+    option broadcast-address 10.0.33.15;
+}
+```
+
+La siguiente parte de la configuración va en el archivo `/etc/default/isc-dhcp-server`. Aquí simplemente indicamos el archivo de configuración que acabamos de editar, el archivo para el *process id* y la interfaz en donde vamos a proporcionar el servicio. Recordemos que esta interfaz debe ser la que usaremos para la red dedicada (la que va conectada al conmutador).
+
+```
+DHCPDv4_CONF=/etc/dhcp/dhcpd.conf
+DHCPDv4_PID=/var/run/dhcpd.pid
+INTERFACESv4="[IFACE]"
+```
+
+Luego de cualquier cambio en la configuración, es necesario reiniciar el servicio:
+
+```bash
+systemctl restart isc-dhcp-server
+```
+
+Ahora ya podemos conectar un dispositivo al conmutador y nos debería asignar una dirección en el segmento "Pruebas", ya que no tenemos dispositivos estáticos configurados. Los nodos esclavos los configuraremos en la siguiente parte.
+
+#### 3.2.2 Configuración del servidor TFTP
+
+Este servicio necesita que le proporcionemos un directorio especial que contiene los archivos que vamos a servir.
+
+```bash
+mkdir /srv/tftp
+```
+
+Ahora configuramos el servicio en el archivo `/etc/default/tftpd-hpa`. Indicamos el directorio que acabamos de crear, el par IP-puerto donde queremos el servicio (que en este caso, es el la del nodo maestro), y las opciones de configuración.
+
+```
+TFTP_USERNAME="tftp"
+TFTP_DIRECTORY="/srv/tftp"
+TFTP_ADDRESS="10.0.33.1:69"
+TFTP_OPTIONS="--secure --create"
+```
+
+Luego de cualquier cambio en la configuración TFTP, debemos reiniciar el servicio.
+
+```bash
+systemctl restart tftpd-hpa
+```
+
+En este punto, ya podemos colocar cuaquier archivo que queramos servir en el directorio `/srv/tftp`.
+
+#### 3.2.3 Configuración del servidor NFS
+
+Usaremos este servicio para servir los sistemas de archivos de cada nodo, por lo que creamos un directorio para esos sistemas de archivos.
+
+```bash
+mkdir /srv/nfs
+```
+
+Luego de eso es necesario que editemos el archivo de configuración `/etc/exports` y, por cada nodo que agregemos, necesitaremos una línea como la siguiente:
+
+```
+[DIR] [IP_NODE](rw,async,no_root_squashm,no_subtree_check)
+```
+
+En la línea anterior, `[DIR]` corresponde al sistema de archivos de ese nodo en particular. Dicho sistema de archvios debe estar dentro del directorio que creamos `/srv/nfs`. Sin embargo, eso lo haremos en secciones posteriores.
+
+#### 3.2.4 Configuración del servidor SSH
+
+- [ ] Pendiente la config. de `openssh-server`.
+
+### 3.3 Generación del nodo esclavo genérico
+
+En esta sección, crearemos un archivo conmprimido que contendrá el sistema de archivos genérico de un nodo esclavo. Y decimos genérico porque una vez establecido el sistema de archivos es neceario configurar unos parámetros específicos para cada nodo (por ejemplo, el *hostname*); pero eso lo haremos cuando llegue el momento de crear cada nodo.
+
+#### 3.3.1 Descarga del sistema base
+
+Primero necesitamos crear un directorio para nuestro sistema de archivos genérico y luego descargamos el sistema base. Este paso puede tomar varios minutos dependiendo de la velocidad de descarga.
+
+```bash
+mkdir /srv/nfs/nodeX
+debootstrap --arch amd64 bullseye /srv/nfs/nodeX https://deb.debian.org/debian
+```
+
+**Sobre CHROOT**
+
+Para "acceder" al sistema de archivos del nodo genérico (y de cualquier nodo), usamos una jaula *chroot* de la siguiente forma.
+
+```bash
+# ANTES de chroot
+mount -o bind /dev /srv/nfs/nodeX/dev
+mount -o bind /run /srv/nfs/nodeX/run
+mount -o bind /sys /srv/nfs/nodeX/sys
+
+chroot /srv/nfs/nodeX/
+
+# DENTRO de chroot
+mount -t proc proc proc
+```
+
+#### 3.3.2 Configuración de puntos de montaje
+
+Los puntos de montaje no varían respecto a los nodos por lo que los podemos configurar en este momento en el archivo `/srv/nfs/nodeX/etc/fstab`.
+
+```
+/dev/nfs / nfs tcp,nolock 0 0
+proc /proc proc defaults 0 0
+none /tmp tmpfs defaults 0 0
+none /var/tmp tmpfs defaults 0 0
+none /media tmpfs defaults 0 0
+none /var/log tmpfs defaults 0 0
+```
+
+#### 3.3.3 Instalación de software
+
+**NOTA**: usar la jaula.
+
+En esta sección instalamos el software crítico de cada nodo esclavo
+
+**PENDIENTE**
+
+- [ ] Servidor SSH, RSA
+- [ ] MPI
+
+#### 3.3.4 Generación de sistema de archivos RAM inicial para PXE
+
+**NOTA**: usar la jaula.
+
+Instalamos los paquetes necesarios (el kernel y las herramientas initramfs).
+
+```bash
+apt install initramfs-tools linux-image-amd64
+```
+
+Indicamos a la configuración que necesitamos los controladores NFS durante el arranque.
+
+```bash
+echo BOOT=nfs >> /etc/initramfs-tools/initramfs.conf
+```
+
+Generamos el sistema de archivos RAM inicial y el kernel, ambos para el arranque PXE.
+```bash
+mkinitramfs -o /boot/initrd.pxe
+update-initramfs -u
+cp -vax /boot/initrd.img-[CURRENT_KERNEL] /boot/initrd.pxe
+cp -vax /boot/vmlinuz-[CURRENT_KERNEL] /boot/vmlinuz.pxe
+```
+
+Ahora **salimos de la jaula** y recuperamos los archivos PXE que acabamos de crear, y los ponemos en el directorio de servicio del servidor TFTP, ya que son los que usarán los nodos esclavos para arrancar.
+
+```bash
+cp -vax /srv/nfs/boot/*.pxe /srv/tftp
+```
+
+#### 3.3.6 Generación del comprimido del sistema base
+
+Una vez que recuperamos los archivos PXE del sistema de archivos genérico, estamos listos para comprimir dicho directorio, ya que es el que usaremos para crear el sistema de archivos de cada nodo esclavo nuevo que creemos en el futuro. Dicho esto, procedemos a comprimir el directorio y eliminamos el directorio del nodo genérico.
+
+**NOTA**: es necesario moverse al directorio padre de `nodeX` para evitar que el comprimido contenga la ruta completa, eso lo hacemos con la opción `-C` del comando `tar`.
+
+```bash
+tar czvf /srv/nfs/nodeX.tgz -C /srv/nfs/ nodeX --remove-files
+```
+
+Esto nos generará el archivo `/srv/nfs/nodeX.tgz`; el cuál, podremos descomprimir cada que necesitemos un nuevo sistema de archivos para un nuevo nodo esclavo.
+
+## 4. Creación de los nodos esclavos
+### 4.1 Configuración DHCP
+### 4.2 Sistema de archivos
+### 4.3 Nombre del host
+### 4.4 Configuración NFS
+### 4.5 Configuración TFTP/PXE
