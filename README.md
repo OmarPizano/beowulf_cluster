@@ -7,6 +7,7 @@ En este repositorio documentamos la configuración de un clúster para HPC (*hig
 - [ ] **ACTIVO** (08-03-2022) Investigación y pruebas de configuración del sistema operativo en máquinas virtuales.
 - [ ] **ACTIVO** (04-04-2022) [Manual de instalación y configuración de los sistemas y servicios](manual.md).
 - [ ] **ACTIVO** (28-04-2022) Recolección, instalación y conexión del equipo real.
+- [ ] **ACTIVO** (30-04-2022) Automatización de la instalación y configuración de los sistemas y servicios.
 - [ ] Prueba del equipo real con la configuración del sistema operativo.
 - [ ] Investigación y pruebas de las librerías de HPC.
 - [ ] Optimización de la configuración de los sistemas operativos (nodos maestro y esclavos), arquitectura y hardware.
