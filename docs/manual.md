@@ -38,7 +38,7 @@
 
 Consideramos la siguiente arquitectura:
 
-![Figura 1. Arquitectura del clúster](cluster.png)
+![Figura 1. Arquitectura del clúster](img/cluster.png)
 
 El clúster se encuentra conformado por los siguientes elementos críticos:
 
