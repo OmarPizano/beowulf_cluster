@@ -275,7 +275,40 @@ tar czvf /srv/nfs/nodeX.tgz -C /srv/nfs/ nodeX --remove-files
 Esto nos generará el archivo `/srv/nfs/nodeX.tgz`; el cuál, podremos descomprimir cada que necesitemos un nuevo sistema de archivos para un nuevo nodo esclavo.
 
 ## 4. Creación de los nodos esclavos
+
+En esta sección detallamos el procedimiento a seguir para configurar un nuevo nodo esclavo. Primero que nada, es necesario tomar nota de la **dirección MAC** del nuevo nodo y considerar los nodos esclavo ya existentes. Asumiremos como ejemplo la creación del **primer nodo esclavo**.
+
 ### 4.1 Configuración DHCP
+
+Procedemos a añadir la configuración DHCP del nodo esclavo número 1. Recordemos que las direcciones IP de estos nodos serán estáticas y en el segmento "Nodos esclavo". El número de la IP define el número del nodo. En este caso, tendríamos la dirección 10.0.33.1; para el segundo nodo, tendríamos 10.0.33.2 y así sucesivamente. También es necesario especificarle a cada nodo el archivo `pxelinux.0` y la dirección del servidor TFTP; por lo que crearemos un **grupo** para configurar estos parámetros, y no tener que repetirlos en el bloque de cada nodo.
+
+Con éste primer nodo esclavo agregado, la configuración en `/etc/dhcp/dhcpd.conf` quedaría de la siguiente forma. **NOTA**: reemplazar `[MAC]` por la dirección MAC del nodo en cuestión.
+
+```
+allow booting;
+allow bootp;
+subnet 10.0.33.0 netmask 255.255.255.15 {
+    range 10.0.33.6 10.0.33.10;
+    option routers 10.0.33.1;
+    option broadcast-address 10.0.33.15;
+    group {                                     # grupo para nodos esclavo
+        filename "pxelinux.0";                  # imagen de arranque PXE
+        next-server 10.0.33.1;                  # IP del servidor TFTP (de donde descarga la imagen de arranque)
+        host node1 {                            # bloque del nodo esclavo 1 (repetir para cada nodo)
+            hardware ethernet "[MAC]";
+            fixed-address 10.0.33.1;
+        }
+
+    }
+}
+```
+
+Luego de este cambio, reiniciamos el servidor DHCP.
+
+```bash
+systemctl restart isc-dhcp-server
+```
+
 ### 4.2 Sistema de archivos
 ### 4.3 Nombre del host
 ### 4.4 Configuración NFS
