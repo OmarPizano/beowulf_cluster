@@ -346,3 +346,20 @@ systemctl restart nfs-server
 ```
 
 ### 4.5 Configuración TFTP/PXE
+
+Ahora necesitamos indicar el archivo de configuración de arranque PXE. Al momento de iniciar el nodo esclavo obtendrá la imagen del cargador de arranque, y posteriormente descargará su configuración. Cada nodo tendrá una configuración de arranque distinta, puesto que cada nodo carga un sistema de archivos diferente. Esto significa que tendremos varios archivos de configuración de arranque; estos archivos de configuración estarán en el directorio `/srv/tftp/pxelinux.cfg`, por lo que procedemos a crearlo.
+
+```bash
+mkdir /srv/tftp/pxelinux.cfg
+```
+
+La forma en la que el cargador de arranque sabrá qué archivo de configuración descargar, es mediante su dirección IP; es decir, el archivo de configuración tendrá como nombre la **dirección IP del nodo esclavo en hexadecimal**. Como el nodo 1 tiene la dirección en 10.0.33.1, entonces su archivo de configuración será `/srv/tftp/pxelinux.cfg/0A002101`, y contiene la siguiente estructura.
+
+```
+default node1
+prompt 1
+timeout 3
+    label node1
+    kernel vmlinuz.pxe
+    append rw initrd=initrd.pxe root=/dev/nfs ip=dhcp nfsroot=10.0.33.14:/srv/nfs/node1
+```
