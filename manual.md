@@ -289,10 +289,12 @@ cp -vax /boot/initrd.img-[CURRENT_KERNEL] /boot/initrd.pxe
 cp -vax /boot/vmlinuz-[CURRENT_KERNEL] /boot/vmlinuz.pxe
 ```
 
-Ahora **salimos de la jaula** y recuperamos los archivos PXE que acabamos de crear, y los ponemos en el directorio de servicio del servidor TFTP, ya que son los que usarán los nodos esclavos para arrancar.
+Ahora **salimos de la jaula** y recuperamos los archivos PXE que acabamos de crear, y los ponemos en el directorio de servicio del servidor TFTP, ya que son los que usarán los nodos esclavos para arrancar. También copiamos algunos archivos indispensables para el cargador de arranque.
 
 ```bash
 cp -vax /srv/nfs/boot/*.pxe /srv/tftp
+cp -vax /usr/lib/PXELINUX/pxelinux.o /srv/tftp
+cp -vax /usr/lib/syslinux/modules/bios/ldlinux.c32 /srv/tftp
 ```
 
 #### 3.3.5 Generación del comprimido del sistema base<a id="335"></a>
