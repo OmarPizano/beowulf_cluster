@@ -146,7 +146,7 @@ allow booting;
 allow bootp;
 subnet 10.0.33.0 netmask 255.255.255.15 {
     range 10.0.33.6 10.0.33.10;
-    option routers 10.0.33.1;
+    option routers 10.0.33.14;
     option broadcast-address 10.0.33.15;
 }
 ```
