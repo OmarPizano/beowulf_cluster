@@ -289,11 +289,11 @@ allow booting;
 allow bootp;
 subnet 10.0.33.0 netmask 255.255.255.15 {
     range 10.0.33.6 10.0.33.10;
-    option routers 10.0.33.1;
+    option routers 10.0.33.14;
     option broadcast-address 10.0.33.15;
     group {                                     # grupo para nodos esclavo
         filename "pxelinux.0";                  # imagen de arranque PXE
-        next-server 10.0.33.1;                  # IP del servidor TFTP (de donde descarga la imagen de arranque)
+        next-server 10.0.33.14;                  # IP del servidor TFTP (de donde descarga la imagen de arranque)
         host node1 {                            # bloque del nodo esclavo 1 (repetir para cada nodo)
             hardware ethernet "[MAC]";
             fixed-address 10.0.33.1;
