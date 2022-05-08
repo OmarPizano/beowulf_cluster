@@ -120,7 +120,7 @@ iface [INT_1] inet dhcp
 auto [INT_2]
 iface [INT_2] inet static
     address 10.0.33.14
-    netmask 255.255.255.15
+    netmask 255.255.255.240
     network 10.0.33.0
     broadcast 10.0.33.15
 ```
@@ -144,7 +144,7 @@ La mayor parte de la configuración va en el archivo `/etc/dhcp/dhcpd.conf`. Ind
 ```
 allow booting;
 allow bootp;
-subnet 10.0.33.0 netmask 255.255.255.15 {
+subnet 10.0.33.0 netmask 255.255.255.240 {
     range 10.0.33.6 10.0.33.10;
     option routers 10.0.33.14;
     option broadcast-address 10.0.33.15;
@@ -320,7 +320,7 @@ Con éste primer nodo esclavo agregado, la configuración en `/etc/dhcp/dhcpd.co
 ```
 allow booting;
 allow bootp;
-subnet 10.0.33.0 netmask 255.255.255.15 {
+subnet 10.0.33.0 netmask 255.255.255.240 {
     range 10.0.33.6 10.0.33.10;
     option routers 10.0.33.14;
     option broadcast-address 10.0.33.15;
