@@ -1,5 +1,38 @@
 # Manual de Configuración
 
+[1. Introducción](#1-introduccin)
+[1.1 Servicios de la red general](#11-servicios-de-la-red-general)
+[1.1.1 Servidor SSH](#111-servidor-ssh)
+[1.2 Servicios de la red dedicada](#12-servicios-de-la-red-dedicada)
+[1.2.1 Servidor DHCP](#121-servidor-dhcp)
+[1.2.2 Servidor TFTP](#122-servidor-tftp)
+[1.2.3 Servidor NFS](#123-servidor-nfs)
+[1.2.4 Servidor SSH (nodos esclavo)](#124-servidor-ssh-nodos-esclavo)
+[1.3 Direccionamiento IP](#13-direccionamiento-ip)
+[1.3.1 Red general](#131-red-general)
+[1.3.2 Red dedicada](#132-red-dedicada)
+[1.4 Sistema operativo de los nodos](#14-sistema-operativo-de-los-nodos)
+[2. Instalación del SO del nodo maestro](#2-instalacin-del-so-del-nodo-maestro)
+[3. Configuración del nodo maestro](#3-configuracin-del-nodo-maestro)
+[3.1 Configuración de red](#31-configuracin-de-red)
+[3.2 Instalación y configuración del software necesario](#32-instalacin-y-configuracin-del-software-necesario)
+[3.2.1 Configuración del servidor DHCP](#321-configuracin-del-servidor-dhcp)
+[3.2.2 Configuración del servidor TFTP](#322-configuracin-del-servidor-tftp)
+[3.2.3 Configuración del servidor NFS](#323-configuracin-del-servidor-nfs)
+[3.2.4 Configuración del servidor SSH](#324-configuracin-del-servidor-ssh)
+[3.3 Generación del nodo esclavo genérico](#33-generacin-del-nodo-esclavo-genrico)
+[3.3.1 Descarga del sistema base](#331-descarga-del-sistema-base)
+[3.3.2 Configuración de puntos de montaje](#332-configuracin-de-puntos-de-montaje)
+[3.3.3 Instalación de software](#333-instalacin-de-software)
+[3.3.4 Generación de sistema de archivos RAM inicial para PXE](#334-generacin-de-sistema-de-archivos-ram-inicial-para-pxe)
+[3.3.6 Generación del comprimido del sistema base](#336-generacin-del-comprimido-del-sistema-base)
+[4. Creación de los nodos esclavos](#4-creacin-de-los-nodos-esclavos)
+[4.1 Configuración DHCP](#41-configuracin-dhcp)
+[4.2 Sistema de archivos](#42-sistema-de-archivos)
+[4.2.1 Nombre del host](#421-nombre-del-host)
+[4.3 Configuración NFS](#43-configuracin-nfs)
+[4.4 Configuración TFTP/PXE](#45-configuracin-tftp/pxe)
+
 ## 1. Introducción
 
 Consideramos la siguiente arquitectura:
@@ -345,7 +378,7 @@ Reiniciamos el servidor NFS.
 systemctl restart nfs-server
 ```
 
-### 4.5 Configuración TFTP/PXE
+### 4.4 Configuración TFTP/PXE
 
 Ahora necesitamos indicar el archivo de configuración de arranque PXE. Al momento de iniciar el nodo esclavo obtendrá la imagen del cargador de arranque, y posteriormente descargará su configuración. Cada nodo tendrá una configuración de arranque distinta, puesto que cada nodo carga un sistema de archivos diferente. Esto significa que tendremos varios archivos de configuración de arranque; estos archivos de configuración estarán en el directorio `/srv/tftp/pxelinux.cfg`, por lo que procedemos a crearlo.
 
