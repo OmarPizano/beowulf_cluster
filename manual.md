@@ -22,10 +22,11 @@
         - [3.2.4 Configuración del servidor SSH](#324)
     - [3.3 Generación del nodo esclavo genérico](#33)
         - [3.3.1 Descarga del sistema base](#331)
-    - [3.3.2 Configuración de puntos de montaje](#332)
-    - [3.3.3 Instalación de software](#333)
-    - [3.3.4 Generación de sistema de archivos RAM inicial para PXE](#334)
-    - [3.3.5 Generación del comprimido del sistema base](#335)
+        - [3.3.2 Configuración de puntos de montaje](#332)
+        - [3.3.3 Instalación de software](#333)
+        - [3.3.4 Configuración de usuarios](#334)
+        - [3.3.5 Generación de sistema de archivos RAM inicial para PXE](#335)
+        - [3.3.6 Generación del comprimido del sistema base](#336)
 - [4. Creación de los nodos esclavos](#4)
     - [4.1 Configuración DHCP](#41)
     - [4.2 Sistema de archivos](#42)
@@ -265,7 +266,17 @@ En esta sección instalamos el software crítico de cada nodo esclavo
 - [ ] Servidor SSH, RSA
 - [ ] MPI
 
-#### 3.3.4 Generación de sistema de archivos RAM inicial para PXE<a id="334"></a>
+#### 3.3.4 Configuración de usuarios<a id="334"></a>
+
+**NOTA**: usar la jaula.
+
+De momento, simplemente configuramos la contraseña del usuario `root`:
+
+```bash
+passwd
+```
+
+#### 3.3.5 Generación de sistema de archivos RAM inicial para PXE<a id="335"></a>
 
 **NOTA**: usar la jaula.
 
@@ -297,7 +308,7 @@ cp -vax /usr/lib/PXELINUX/pxelinux.o /srv/tftp
 cp -vax /usr/lib/syslinux/modules/bios/ldlinux.c32 /srv/tftp
 ```
 
-#### 3.3.5 Generación del comprimido del sistema base<a id="335"></a>
+#### 3.3.6 Generación del comprimido del sistema base<a id="336"></a>
 
 Una vez que recuperamos los archivos PXE del sistema de archivos genérico, estamos listos para comprimir dicho directorio, ya que es el que usaremos para crear el sistema de archivos de cada nodo esclavo nuevo que creemos en el futuro. Dicho esto, procedemos a comprimir el directorio y eliminamos el directorio del nodo genérico.
 
