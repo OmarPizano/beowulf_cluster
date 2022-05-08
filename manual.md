@@ -310,6 +310,39 @@ systemctl restart isc-dhcp-server
 ```
 
 ### 4.2 Sistema de archivos
-### 4.3 Nombre del host
-### 4.4 Configuración NFS
+
+Procedemos a generar el sistema de archivos del primer nodo. Recordemos que, en secciones anteriores, creamos un archivo comprimido con una versión genérica de dicho sistema de archivos. Lo único que necesitamos hacer es descomprimir una copia, renombrarla con el nombre del nodo y realizar las configuraciones pertinentes en dicho sistema de archivos.
+
+```bash
+cd /srv/nfs
+tar xzvf nodeX.tgz
+mv nodeX node1
+```
+
+Ahora ya podemos configurar el sistema de archivos, ya sea directamente o usando una jaula *chroot*, dependiendo del caso.
+
+#### 4.2.1 Nombre del host
+
+Configuramos el nombre del host del nodo 1
+
+```bash
+echo nodo1 > /srv/nfs/node1/etc/hostname
+```
+
+- [ ] Verificar si hay configuración necesaria que deba añadirse en esta parte.
+
+### 4.3 Configuración NFS
+
+Cuando ya tenemos el sistema de archivos con su configuración correspondiente, le indicamos al servidor NFS la dirección IP del host que tendrá permiso para acceder al mismo. Para ello modificamos el archivo `/etc/exports`. **NOTA**: para los siguientes nodos, es necesario replicar esta línea y cambiar la dirección IP.
+
+```
+/srv/nfs 10.0.33.1(rw,async,no_root_squashm,no_subtree_check)
+```
+
+Reiniciamos el servidor NFS.
+
+```bash
+systemctl restart nfs-server
+```
+
 ### 4.5 Configuración TFTP/PXE
