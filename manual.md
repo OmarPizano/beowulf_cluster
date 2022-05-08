@@ -78,7 +78,7 @@ En esta parte, detallamos el proceso de configuración del nodo maestro, una vez
 
 ### 3.1 Configuración de red
 
-Configuramos ambas interfaces de red del nodo maestro en el archivo `/etc/network/interfaces`. Recordemos que una de las interfaces va conectada a la red del cliente, la cuál muy posiblemente tenga un servidor DHCP, por lo que nosotros usamos dicho servicio. La otra interfaz es la que utilizamos para la red dedicada, y a ésta le asignamos una dirección en el segmento de "Servicios" que definimos en [1.3.2 Red dedicada](#1.3.2-red-dedicada); en concreto, usamos la IP 10.0.33.14 para el nodo maestro.
+Configuramos ambas interfaces de red del nodo maestro en el archivo `/etc/network/interfaces`. Recordemos que una de las interfaces va conectada a la red del cliente, la cuál muy posiblemente tenga un servidor DHCP, por lo que nosotros usamos dicho servicio. La otra interfaz es la que utilizamos para la red dedicada, y a ésta le asignamos una dirección en el segmento de "Servicios" que definimos en [1.3.2 Red dedicada](#132-red-dedicada); en concreto, usamos la IP 10.0.33.14 para el nodo maestro.
 
 ```
 auto [INT_1]
