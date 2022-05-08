@@ -180,7 +180,7 @@ Ahora configuramos el servicio en el archivo `/etc/default/tftpd-hpa`. Indicamos
 ```
 TFTP_USERNAME="tftp"
 TFTP_DIRECTORY="/srv/tftp"
-TFTP_ADDRESS="10.0.33.1:69"
+TFTP_ADDRESS="10.0.33.14:69"
 TFTP_OPTIONS="--secure --create"
 ```
 
@@ -326,7 +326,7 @@ subnet 10.0.33.0 netmask 255.255.255.15 {
     option broadcast-address 10.0.33.15;
     group {                                     # grupo para nodos esclavo
         filename "pxelinux.0";                  # imagen de arranque PXE
-        next-server 10.0.33.14;                  # IP del servidor TFTP (de donde descarga la imagen de arranque)
+        next-server 10.0.33.14;                 # IP del servidor TFTP (de donde descarga la imagen de arranque)
         host node1 {                            # bloque del nodo esclavo 1 (repetir para cada nodo)
             hardware ethernet "[MAC]";
             fixed-address 10.0.33.1;
