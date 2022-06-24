@@ -244,7 +244,7 @@ mount -t proc proc proc
 
 #### 3.3.2 Configuración de puntos de montaje<a id="332"></a>
 
-Los puntos de montaje no varían respecto a los nodos por lo que los podemos configurar en este momento en el archivo `/srv/nfs/nodeX/etc/fstab`.
+Los puntos de montaje no varían respecto a los nodos por lo que los podemos configurar en este momento en el archivo `/srv/nfs/nodeX/etc/fstab` (o `/etc/fstab` en caso de estar dentro **chroot**).
 
 ```
 /dev/nfs / nfs tcp,nolock 0 0
@@ -304,7 +304,7 @@ Ahora **salimos de la jaula** y recuperamos los archivos PXE que acabamos de cre
 
 ```bash
 cp -vax /srv/nfs/nodeX/boot/*.pxe /srv/tftp
-cp -vax /usr/lib/PXELINUX/pxelinux.o /srv/tftp
+cp -vax /usr/lib/PXELINUX/pxelinux.0 /srv/tftp
 cp -vax /usr/lib/syslinux/modules/bios/ldlinux.c32 /srv/tftp
 ```
 
