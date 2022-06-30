@@ -131,14 +131,14 @@ cp -vax /srv/nfs/nodeX/boot/*.pxe /srv/tftp
 cp -vax /usr/lib/PXELINUX/pxelinux.0 /srv/tftp
 cp -vax /usr/lib/syslinux/modules/bios/ldlinux.c32 /srv/tftp
 
-tar cv /srv/nfs/nodeX.tar -C /srv/nfs/ nodeX --remove-files
+tar cf /srv/nfs/nodeX.tar -C /srv/nfs/ nodeX --remove-files
 
 cd /srv/nfs
-tar xf nodeX.tgz
+tar xf nodeX.tar
 mv nodeX node1
-tar xf nodeX.tgz
+tar xf nodeX.tar
 mv nodeX node2
-tar xf nodeX.tgz
+tar xf nodeX.tar
 mv nodeX node3
 
 sed '1,$d' /srv/nfs/node1/etc/hostname > temp && mv temp /srv/nfs/node1/etc/hostname
@@ -183,7 +183,7 @@ prompt 1
 timeout 3
     label node3
     kernel vmlinuz.pxe
-    append rw initrd=initrd.pxe root=/dev/nfs ip=dhcp nfsroot=10.0.33.14:/srv/nfs/node2/
+    append rw initrd=initrd.pxe root=/dev/nfs ip=dhcp nfsroot=10.0.33.14:/srv/nfs/node3/
 EOF
 
 
