@@ -62,7 +62,7 @@ iface [INT_2] inet static
 Ahora instalamos el software necesario para la configuración de los servicios.
 
 ```bash
-apt install tftpd-hpa nfs-kernel-server isc-dhcp-server openssh-server syslinux pxelinux debootstrap openssh-server
+apt install tftpd-hpa nfs-kernel-server isc-dhcp-server openssh-server syslinux pxelinux debootstrap
 ```
 
 - [ ] **PENDIENTE** configuración SSH (RSA)
@@ -197,7 +197,7 @@ cp -vax /usr/lib/syslinux/modules/bios/ldlinux.c32 /srv/tftp
 Ahora generamos el archivo que contiene nuestro sistema de archivos genérico para los esclavos.
 
 ```bash
-tar cv /srv/nfs/nodeX.tar -C /srv/nfs/ nodeX --remove-files
+tar cf /srv/nfs/nodeX.tar -C /srv/nfs/ nodeX --remove-files
 ```
 
 ## 4. Crear nodos esclavo<a id="4"></a>
