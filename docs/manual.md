@@ -4,6 +4,7 @@
 - [2. Instalar y configurar nodo maestro](#2)
 - [3. Configurar esclavo base](#3)
 - [4. Crear nodos esclavo](#4)
+- [5. Test OpenMPI](#5)
 
 ## 1. Introducción<a id="1"></a>
 
@@ -43,9 +44,25 @@ Para el caso de la red de propósito general, dejaremos la configuración de dir
 
 ## 2. Instalar y configurar nodo maestro<a id="2"></a>
 
-- [ ] **PENDIENTE** Documentar el procedimiento de instalación (scripts o con instalador).
+De momento, el nodo maestro no requiere ninguna configuración especial, por lo que procedemos a instalar únicamente el sistema base de Debian. Esto lo hacemos mediante el instalador *netinstall* del [sitio oficial](https://www.debian.org/CD/netinst/). Una vez en el sitio, vamos a la sección de descargas y seleccionamos la arquitectura deseada (amd64, arm64, i386, etc.) y el medio de descarga (http o torrent).
 
-Procedemos a configurar las 2 interfaces del red en `/etc/network/interfaces`. Dejamos una en automático y la otra estática para la red interna del clúster.
+Una vez descargada la imagen ISO del sistema, procedemos a copiarla en un USB. **IMPORTANTE**: modificar los valores `if=` y `of=` como corresponda.
+
+```bash
+dd if=/home/user/downloads/debian.iso of=/dev/sdb status=progress conv=fsync
+```
+
+Ahora procedemos a arrancar el nodo maestro desde la USB que acabamos de crear. Y realizamos una **instalación mínima**. Algunos puntos importantes sobre la instalación son los siguientes:
+
+- Configurar el nombre del host (p. ej. `masternode`).
+- Configurar una cuenta de root y su contraseña apropiadamente.
+- Configurar un usuario sin privilegios y su contraseña apropiadamente (p. ej. `user`).
+- Se puede utilizar el particionado guiado en todo el disco, pero se recomienda implementar LVM (al menos para `/`, `/srv`) para facilitar ajustes futuros.
+- Al momento de seleccionar el software, desmarcar todas las opciones. 
+
+Procedemos con el resto de configuración como resulte conveniente, terminamos la instalación y arrancamos nuestro nuevo sistema.
+
+Una vez el nuevo sistema completamente limpio, pasamos a configurar las 2 interfaces del red en `/etc/network/interfaces`. Si es posible, configuramos ambas interfaces con direcciones estáticas, de lo contrario, dejamos una en automático (la de la red general) y la otra estática para la red interna del clúster.
 
 ```
 auto [INT_1]
@@ -62,10 +79,20 @@ iface [INT_2] inet static
 Ahora instalamos el software necesario para la configuración de los servicios.
 
 ```bash
-apt install tftpd-hpa nfs-kernel-server isc-dhcp-server openssh-server syslinux pxelinux debootstrap
+apt install tftpd-hpa nfs-kernel-server isc-dhcp-server openssh-server openmpi-bin nfs-common syslinux pxelinux debootstrap build-essential libopenmpi-dev
 ```
 
-- [ ] **PENDIENTE** configuración SSH (RSA)
+Procedemos a configurar el servicio SSH, de modo que podamos acceder al usuario sin privilegios que creamos durante la instalación (p. ej. `user`, **no root**). Se recomienda configurar lo siguiente:
+
+- En caso de tener una IP estática en la red general, la configuramos para que el servidor SSH únicamente ofrezca el servicio en esa red y NO en la red interna del clúster.
+- Desactivar completamente el acceso por contraseña y, en cambio, utilizar un par de claves SSH.
+- No permitir el acceso remoto a la cuenta `root`.
+- Considerar [otros ajustes](https://www.digitalocean.com/community/tutorials/how-to-harden-openssh-on-ubuntu-18-04-es) de hardenización de SSH.
+
+Reiniciamos el servicio SSH para aplicar la nueva configuración.
+```bash
+systemctl restart sshd.service
+```
 
 Configuramos el servicio DHCP. En primer lugar, indicamos el archivo de configuración y la interfaz
 que vamos a utilizar en `/etc/default/isc-dhcp-server`.
@@ -101,7 +128,7 @@ Configuramos el servicio en el archivo `/etc/default/tftpd-hpa`.
 TFTP_USERNAME="tftp"
 TFTP_DIRECTORY="/srv/tftp"
 TFTP_ADDRESS="10.0.33.14:69"
-TFTP_OPTIONS="--secure --create"
+TFTP_OPTIONS="--secure"
 ```
 
 Reiniciamos los servicios para aplicar la configuración.
@@ -109,6 +136,29 @@ Reiniciamos los servicios para aplicar la configuración.
 ```bash
 systemctl restart tftpd-hpa isc-dhcp-server
 ```
+
+Creamos el usuario dedicado `mpi` para las operaciones de control del clúster.
+
+```bash
+groupadd -g 9999 mpi
+useradd -m -r -s /bin/bash -u 9999 -g 9999 mpi
+passwd mpi
+```
+
+Accedemos al usuario `mpi`, y le configuramos un par de claves SSH para posteriormente copiarlas a la configuración base del nodo esclavo para accederlo remotamente. Cuando el comando `ssh-keygen` nos pida la contraseña de la clave, **la dejamos vacía**.
+
+```bash
+su mpi
+ssh-keygen -t rsa -b 4096
+```
+
+También creamos el directorio `cloud` en el directorio del usuario `mpi` para operaciones específicas del clúster.
+
+```bash
+mkdir /home/mpi/cloud
+```
+
+Salimos del usuario `mpi`.
 
 ## 3. Configurar esclavo base<a id="3"></a>
 
@@ -120,6 +170,8 @@ debootstrap --arch amd64 bullseye /srv/nfs/nodeX https://deb.debian.org/debian
 ```
 
 En este punto el sistema base pesa aproximadamente 300 MB y toma al rededor de 5 minutos dependiendo de la velocidad de descarga.
+
+---
 
 **Sobre CHROOT**
 
@@ -139,26 +191,60 @@ mount -t proc proc proc
 
 **IMPORTANTE**: al terminar de usar una jaula, desmontar las particiones.
 
-Ahora que ya tenemos nuestro sistema base descargado, procedemos a configurarlo. Primero vamos a configurar los mismos repositorios que tenemos en el nodo maestro y procedemos a actualizar el sistema base.
+---
+
+Ahora que ya tenemos nuestro sistema base descargado, procedemos a configurarlo. Primero vamos a configurar los mismos repositorios que tenemos en el nodo maestro.
 
 ```bash
 cat /etc/apt/sources.list > /srv/nfs/nodeX/etc/apt/sources.list
+```
+
+Ahora **accedemos a la jaula** y actualizamos el sistema.
+
+```bash 
 apt update && apt full-upgrade -y
 ```
 
-Ahora **creamos la jaula** usando los pasos descritos arriba y procedemos a instalar el software que necesitamos en cada nodo esclavo.
-
-**PENDIENTE**
-- Instalar MPI (?)
-- Configurar SSH.
+Configuramos una contraseña para `root`.
 
 ```bash
-apt install openssh-server initramfs-tools linux-image-amd64
+passwd
+```
+
+Procedemos a instalar el software que necesitamos en cada nodo esclavo.
+
+```bash
+apt install openssh-server initramfs-tools linux-image-amd64 openmpi-bin nfs-common vim
 ```
 
 **IMPORTANTE**: verificar que el kernel instalado (`linux-image-amd64`) en el sistema base es el mismo que el que tenemos en el nodo maestro.
 
-Configuramos los puntos de montaje en `/etc/fstab`.
+
+Creamos el usuario `mpi` y le configuramos una contraseña.
+
+```bash
+groupadd -g 9999 mpi
+useradd -m -r -s /bin/bash -u 9999 -g 9999 mpi
+passwd mpi
+```
+
+Salimos **temporalmente de la jaula** para recuperar la clave pública SSH del usuario `mpi` del nodo maestro, y la copiamos en el directorio `/home` del usuario `mpi` del nodo genérico. Finalmente, **entramos de nuevo en la jaula** para seguir con la configuración.
+
+```bash
+cp /home/mpi/.ssh/id_rsa.pub /srv/nfs/nodeX/home/mpi
+chroot /srv/nfs/nodeX
+```
+
+Accedemos al usuario y creamos su directorio `/home/mpi/.ssh` para copiar ahí la clave pública SSH del nodo maestro en el archivo `authorized_keys`.
+
+```bash
+su mpi
+mkdir /home/mpi/.ssh
+cat /home/mpi/id_rsa.pub > /home/mpi/.ssh/authorized_keys
+rm id_rsa.pub
+```
+
+**Regresamos al usuario root**  y configuramos los puntos de montaje en `/etc/fstab`.
 
 ```
 /dev/nfs / nfs tcp,nolock 0 0
@@ -167,6 +253,8 @@ none /tmp tmpfs defaults 0 0
 none /var/tmp tmpfs defaults 0 0
 none /media tmpfs defaults 0 0
 none /var/log tmpfs defaults 0 0
+
+10.0.33.14:/home/mpi/cloud /home/mpi/cloud nfs
 ```
 
 Configurar initramfs para que incluya el módulo NFS durante el arranque.
@@ -184,7 +272,7 @@ cp -vax /boot/initrd.img-$(uname-r) /boot/initrd.pxe
 cp -vax /boot/vmlinuz-$(uname -r) /boot/vmlinuz.pxe
 ```
 
-Procedemos a **salir de chroot** (no olvidar desmontar los directorios `/proc`, `/sys`, `/dev` y `/run`).
+Procedemos a **salir de chroot** (no olvidar desmontar los directorios `/proc`, `/sys`, `/dev`, `/run` y demás monturas asociadas a la jaula).
 
 Recuperamos los archivos de arranque y los ubicamos en el directorio del servicio TFTP.
 
@@ -192,6 +280,12 @@ Recuperamos los archivos de arranque y los ubicamos en el directorio del servici
 cp -vax /srv/nfs/nodeX/boot/*.pxe /srv/tftp
 cp -vax /usr/lib/PXELINUX/pxelinux.0 /srv/tftp
 cp -vax /usr/lib/syslinux/modules/bios/ldlinux.c32 /srv/tftp
+```
+
+Finalmente, establecemos un nombre del host para el sistema base de los esclavos (el cuál, cambiaremos cuando vayamos a configurar el nodo).
+
+```bash
+echo nodeX > /srv/nfs/nodeX/etc/hostname
 ```
 
 Ahora generamos el archivo que contiene nuestro sistema de archivos genérico para los esclavos.
@@ -239,32 +333,26 @@ Reiniciamos el servidor DHCP.
 systemctl restart isc-dhcp-server
 ```
 
-Ahora creeamos el sistema de archivos para cada nodo que vayamos a necesitar. Los sistemas de archivos los ubicaremos en el directorio `/srv/nfs`. Procedemos a crear el directorio y extraer cada sistema de archivos.
+Ahora creeamos el sistema de archivos para cada nodo que vayamos a necesitar. Los sistemas de archivos los ubicaremos en el directorio `/srv/nfs`. Procedemos a extraer cada sistema de archivos, y de paso, configuramos el nombre del host de cada esclavo.
 
 ```bash
-mkdir /srv/nfs
 cd /srv/nfs
-tar xf nodeX.tar
-mv nodeX node1
-tar xf nodeX.tar
-mv nodeX node2
-tar xf nodeX.tar
-mv nodeX node3
+
+for node in {node1,node2,node3}; do
+    tar xf nodeX.tar
+    mv nodeX $node1
+    echo $node1 > $node1/etc/hostname
+done
 ```
 
-Ahora ya podemos aplicar las **configuraciones individiales** a cada sistema de archivos usando **chroot**. Las configuraciones a aplicar son las siguientes.
-
-- Establecer el nombre del host.
-- Configurar la contraseña de root.
-- Crear un usuario sin privilegios y su contraseña (?).
-- **PENDIENTE** config. necesaria para MPI (?).
-
-Una vez terminamos de configurar los nodos, procedemos a agregar los sistemas de archivos a `/etc/exports`.
+Agregamos los sistemas de archivos de los nodos a `/etc/exports`. También servimos el directorio especial `cloud` a toda la subred.
 
 ```
 /srv/nfs/node1 10.0.33.1(rw,async,no_root_squash,no_subtree_check)
 /srv/nfs/node2 10.0.33.2(rw,async,no_root_squash,no_subtree_check)
 /srv/nfs/node3 10.0.33.3(rw,async,no_root_squash,no_subtree_check)
+
+/home/mpi/cloud 10.0.33.0/28(rw,async,no_root_squash,no_subtree_check)
 ```
 
 Reiniciamos el servidor NFS.
@@ -291,3 +379,19 @@ timeout 3
 ```
 
 Con esto, los nodos esclavos ya deberían arrancar por red.
+
+## 5. Test OpenMPI<a id="5"></a>
+
+**IMPORTANTE**: Antes de probar, es necesario verificar que el nodo maestro en el usuario `mpi` tiene acceso a **todos** los esclavos **sin interrupciones** (p. ej. cuando es la primera vez y nos pregunta si deseamos agregar el host a `~/.ssh/known_hosts`)
+
+En el **nodo maestro**, como el usuario `mpi` y dentro del directorio compartido `cloud`, compilamos el programa [`mpi-prime.c`](https://github.com/feyziyev007/openmpi/blob/master/mpi-prime.c)
+
+```bash
+mpicc mpi-prime.c -o program
+```
+
+Ejecutamos el programa usando los 3 cores, asumiendo que cada esclavo tiene 1 solo core.
+
+```bash
+mpirun -np 3 -host 10.0.33.1,10.0.33.2,10.0.33.3 ./program
+```
