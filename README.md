@@ -6,15 +6,15 @@ Centralizamos toda la configuración en el nodo maestro, y éste se encarga de p
 
 ## Instrucciones
 
-- [Manual de configuración](docs/manual.md).
-- [Manual de scripts](docs/scripts.md).
+- [Manual de configuración](docs/manual/manual.md).
+- [Manual de scripts](docs/manual/scripts.md).
 
 ## Progreso
 
 - [x] Investigación y diseño del clúster.
-- [ ] **ACTIVO** Implementación del diseño.
-- [ ] Instalación de librería para cálculo en paralelo (OpenMPI).
-- [ ] Instalación de software de modelado.
+- [x] Implementación del diseño.
+- [x] Instalación de librería para cálculo en paralelo (OpenMPI).
+- [ ] **ACTIVO** Instalación de software de modelado.
 - [ ] Optimización de la implementación.
 - [ ] Pruebas.
 - [ ] Documentación.

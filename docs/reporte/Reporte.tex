@@ -1,0 +1,209 @@
+\documentclass[journal]{IEEEtran}
+\usepackage[utf8]{inputenc}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{csquotes}
+\usepackage{url}
+\renewcommand{\arraystretch}{1.5}	% padding de las tablas
+\renewcommand{\figurename}{Figura}
+\renewcommand{\lstlistingname}{Código}
+\renewcommand{\abstractname}{Resumen}
+\renewcommand{\IEEEkeywordsname}{Palabras Clave}
+\renewcommand{\tablename}{Tabla}
+\renewcommand{\refname}{Referencias}
+\usepackage[font={small,it}]{caption}
+\definecolor{light-gray}{gray}{0.95}
+\lstset{
+	basicstyle=\scriptsize\ttfamily,
+	numbers=left,
+	numberstyle=\scriptsize\ttfamily,
+	numbersep=5pt,
+	breaklines=true,
+	backgroundcolor=\color{light-gray},
+	xleftmargin=1cm,
+	xrightmargin=1cm
+%}
+}
+
+\begin{document}
+
+\title{Diseño de un Clúster Beowulf GNU/Linux para el Modelado de Estructuras Químicas}
+
+\author{
+    \IEEEauthorblockN{
+        O. J. Pizano\IEEEauthorrefmark{1},
+        D. A. Gómez Martínez\IEEEauthorrefmark{2},
+        E. Moreno Martínez\IEEEauthorrefmark{3},
+        O. Ortiz Jimenez\IEEEauthorrefmark{4} y
+        M. Trejo Durán\IEEEauthorrefmark{5}
+    }
+    \IEEEauthorblockA{
+        Departamento de Estudios Multidisciplinarios,
+        Universidad de Guanajuato\\
+        Yuriria, Gto.\\
+        \IEEEauthorrefmark{1}oj.pizanoorozco@ugto.mx,
+        \IEEEauthorrefmark{2}da.gomezmartinez@ugto.mx,
+        \IEEEauthorrefmark{3}e.morenomartinez@ugto.mx,
+        \IEEEauthorrefmark{4}o.ortiz@ugto.mx,
+        \IEEEauthorrefmark{5}mtrejo@ugto.mx
+    }
+}
+
+\markboth{SEPTIEMBRE 2022}{} % no quitar estos los {}
+
+\maketitle
+
+\begin{abstract}
+    Aquí vamos a hablar de los resultados que obtuvimos en las pruebas y los sistemas y servicios utilizados.
+\end{abstract}
+
+\begin{IEEEkeywords}
+    Cluster, Beowulf, Diskless, Parallel Programming, Debian, GNU/Linux, PXE, DHCP, TFTP, SSH, NFS, OpenMPI, Quantum Espresso, Gaussian 09.
+\end{IEEEkeywords}
+
+\section{Introducción}
+Dar contexto
+\\
+Hablar sobre las estructuras químicas?
+\\
+Qué es la arquitectura beowulf
+\\
+Arquitectura beowulf como solución barata
+\\
+Que es Linux y por qué usarlo
+
+\section{Antecedentes}
+
+Investigar y mencionar a grandes razgos trabajos ya realizados.
+
+\section{Marco Teórico}
+
+Justificación del problema (cuál es?) y la solución propuesta a grandes razgos.
+\\
+Conceptos fundamentales (beowulf, parallel prog, message passing interfacem, etc.)
+\\
+Hablar también sobre estructuras químicas?
+
+\section{Diseño}
+
+Describir los puntos críticos de la configuración, cosas no tan técnicas y más generales como la diferencia entre el masternode y el slave, el uso de un directorio compartido (CLOUD) para el MPI, etc.
+\\
+Poner un enlace al repositorio donde se puedan encontrar detalles técnicos específicos sobre la configuración de las siguientes tecnologías.
+
+\subsection{Equipo}
+
+Detalles sobre el equipo utilizado (CPU, memoria, etc.)
+
+\subsection{Topología}
+
+Describir (imagen) la topología de red del cluster y como ésta encaja en una red de propósito general.
+
+\subsection{Sistema Operativo}
+
+Hablar sobre el sistema operativo utilizado y puntos críticos sobre la configuración.
+
+\subsection{Servicios}
+
+Describir a grandes razgos los servicios (PXE, DHCP, NFS, etc.), por qué son necesarios y cuáles son los puntos importantes sobre esa configuración.
+
+\subsection{Librería MPI}
+
+Hablar sobre OpenMPI, sobre cómo se instala y como funciona de manera general.
+
+\subsection{Software de Modelado de Estructuras Químicas}
+
+Los diferentes softwares de modelado que van a utilizarse y mencionar los puntos críticos sobre su instalación y/o configuración.
+
+\section{Escenario de Pruebas}
+
+Describir a grandes razgos la metodología para realizar las pruebas con el software de modelado y la captura de resultados. Así como el software adicional utilizado para el monitoreo del cluster.
+
+\section{Resultados}
+
+Gráficos comparativos del rendimiento (tiempo CPU, memoria, etc.) en varias instancias (si aplica) con un CPU normal (p. ej. masternode), contra el cluster a su maxima potencia, etc.
+
+\section{Conclusiones}
+
+Bla bla y recomendaciones.
+
+\begin{thebibliography}{10}
+	\bibitem{article}
+	J. Weizenbaum,
+	"ELIZA—a computer program for the study of natural language communication between man and machine",
+	\textit{Communications of the ACM},
+	vol. 9,
+	no. 1,
+	pp. 36-45,
+	1966.
+	\bibitem{book}
+	B. Ward,
+	\textit{How Linux works: what every superuser should know}.
+	3ra ed.
+	CA: No Starch Press,
+	2021.
+	pp 123-141.
+	\bibitem{website}
+	Malathi T,
+	"Setup a blog in minutes with Jekyll \& Github",
+	2020.
+	[En Línea].
+	Disponible en: \url{https://www.loginradius.com/blog/async/setup-blog-in-minutes-with-jekyll/}.
+	[Accedido: 13-Ene-2021]
+\end{thebibliography}
+
+\end{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% EJEMPLOS
+
+% EJEMPLO DE IMAGEN
+%\begin{figure}[H]
+%	\centering
+%	\includegraphics[scale=0.6]{figures/model-pca-results.png}
+%	\caption{Texto de la imagen}
+%   \label{fig:figura}
+%\end{figure}
+
+% EJEMPLO DE TABLA
+%\begin{table}[h]
+%	\begin{tabular}{|c|c|c|c|p{5cm}|}
+%		\hline
+%		\textbf{Stakeholder} & \textbf{Rol} & \textbf{Interés} & \textbf{Influencia} & \textbf{Descripción} \\
+%		\hline
+%		Persona1 & Supervisor de Proyecto & Alto & Alto & Supervisa el trabajo en equipo de los desarrolladores. \\
+%		\hline
+%		Persona2 & Programador & Alto & Alto & Investiga el desarrollo del proyecto. \\
+%		\hline
+%		Persona3 & Programador & Alto & Alto & Investiga el desarrollo del proyecto. \\
+%		\hline
+%		Persona4 & Programador & Alto & Alto & Investiga el desarrollo del proyecto. \\
+%		\hline
+%	\end{tabular}
+%	\caption{Stakeholders del proyecto.}
+%	\label{tab:stakeholders}
+%\end{table}
+
+%%% EJEMPLO DE ECUACIONES
+%\begin{center}
+%    \begin{equation}
+%        \vec{R}(t)=2e^t\sin(t)\hat{i}+3e^t\cos(t)\hat{j}+4e^t\hat{k}
+%    \end{equation}
+%    \begin{equation}
+%        \vec{R}(t)=\sqrt{t^2-5}\hat{i}+\ln(t-8)\hat{j}+(t^2-3t+7)\hat{k}
+%    \end{equation}
+%\end{center}
+
+%%% EJEMPLO DE CÓDIGO
+%\begin{lstlisting}[caption=Ejemplo de Código en C.]
+%#include <stdio.h>
+%int main(int argc, const char *argv[])
+%{
+%	printf("Hello World!\n");
+%	return 0;
+%}
+%\end{lstlisting}
+
+%%% EJEMPLO DE CÓDIGO DESDE ARCHIVO EXTERNO
+%\begin{lstlisting}[caption=Ejemplo de Código en C.]{code.c}
